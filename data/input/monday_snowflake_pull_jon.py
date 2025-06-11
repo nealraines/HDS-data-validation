@@ -15,24 +15,37 @@ from snowflake.connector.pandas_tools import write_pandas
 from datetime import datetime
 
 
-def run_json_query(api_url,headers,query2):
+def run_json_query(query2):
     """ Makes post request with given headers and query to given api address
 
-        Args:
-            api_url (str): URL of Monday.com API endpoint
+    Args:
+        query2 (str): JSON structured string of query
 
-            headers (dict): Dictionary of request headers
-
-            query2 (str): JSON structured query
-
-        Returns:
-            r (requests.Response Object): response object from post request
+    Returns:
+        (requests.Response Object): response object from post request
         """
+    # API key:
+    api_key = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjQ3MzgxNDg4NywiYWFpIjoxMSwidWlkIjozNTUxMzQ1MywiaWFkIjoiMjAyNS0wMi0xN1QyMDo0NDoyOC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6OTM1Mzk1MywicmduIjoidXNlMSJ9.GREM3F1cLzck1rhK1zwNo0a91pwKiYw7OAOhhPrRKfA"
+
+    # API url:
+    api_url = "https://api.monday.com/v2"
+
+    # Request headers:
+    headers = {"Authorization": api_key, "API-Version": "2025-04"}
+
     query_data = {'query': query2}  # format query into dict
     return requests.post(url=api_url, json=query_data, headers=headers)  # make request
 
 
-def extend_items(api_url,headers,json_data):
+def extract_items(json_data):
+    """ Extracts all items out of Json_data dictionary
+
+    Args:
+        json_data (dict): JSON object based on API request
+
+    Returns:
+        all_items (list): list of all items from json_data dictionary
+    """
     items = json_data['data']['boards'][0]['items_page']['items']
     cursor = json_data['data']['boards'][0]['items_page']['cursor']
 
@@ -60,7 +73,7 @@ def extend_items(api_url,headers,json_data):
         }}
     }}'''
 
-        json_data = run_json_query(api_url,headers,query).json()
+        json_data = run_json_query(query).json()
         items = json_data['data']['boards'][0]['items_page']['items']
         cursor = json_data['data']['boards'][0]['items_page']['cursor']
         all_items.extend(items)
@@ -70,6 +83,14 @@ def extend_items(api_url,headers,json_data):
 
 
 def create_df(all_items):
+    """ Creates pandas dataframe containing data from all items in all_items
+
+    Args:
+        all_items (list): list of all items from json_data dictionary:
+
+    Returns:
+        extracted_data (pandas dataframe): pandas dataframe containing data from all items in all_items
+    """
     extracted_data = []
 
     # Define Columns Here
@@ -82,47 +103,15 @@ def create_df(all_items):
     return extracted_data
 
 
-def main():
-    # API key:
-    api_key = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjQ3MzgxNDg4NywiYWFpIjoxMSwidWlkIjozNTUxMzQ1MywiaWFkIjoiMjAyNS0wMi0xN1QyMDo0NDoyOC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6OTM1Mzk1MywicmduIjoidXNlMSJ9.GREM3F1cLzck1rhK1zwNo0a91pwKiYw7OAOhhPrRKfA"
+def modify_df(df):
+    """ Modify dataframe by renaming columns, droping subitems, and adjusting report date format
 
-    # API url:
-    api_url = "https://api.monday.com/v2"
+    Args:
+        df (pandas dataframe): dataframe containing extracted JSON items
 
-    # Request headers:
-    headers = {"Authorization": api_key, "API-Version": "2025-04"}
-
-    # desired query
-    query2 = '''{
-        boards(ids: 8283305838) {
-            items_page {
-                cursor
-                items {
-                    group {
-                        id
-                        title
-                }
-                    id
-                    name
-                    column_values {
-                        id
-                        text
-                        type
-                    }
-                }
-            }
-        }
-    }'''
-
-    # Set the result dictionary to a variable:
-    json_data = run_json_query(api_url,headers,query2).json()
-
-    # View the response
-    # pprint(json_data)
-
-    # Create DataFrame
-    df = pd.DataFrame(extract_items(api_url,headers,json_data))
-
+    Returns:
+        df (pandas dataframe): modified dataframe
+    """
     column_renames = {'GROUP':'WORK_GROUP',
     'VENDOR_NAME':'VENDOR_NAME',
     'person':'ASSIGNED_TO',
@@ -153,8 +142,15 @@ def main():
     df.rename(columns=column_renames, inplace=True)
     df['REPORT_DATE'] = datetime.today().strftime('%Y-%m-%d')
 
-    #df.to_excel('MondayData.xlsx')
+    return df
 
+
+def write_to_snowflake(df):
+    """ Connect to snowflake database and write df
+
+    Args:
+        df (pandas dataframe): pandas dataframe containing extracted JSON items
+    """
     con = snowflake.connector.connect(
         user="jonathan.wheeler@hdsupply.com",  # You can get it by executing in UI: desc user <username>;
         account="data.us-central1.gcp",  # Add all of the account-name between https:// and snowflakecomputing.com in URL
@@ -170,12 +166,56 @@ def main():
     # cur.execute(truncate_table_query)
     # print("Old Data Dropped")
 
+    # write df to Snowflake table
     success, nchunks, nrows, _ = write_pandas(con, df, 'MONDAY_SC_CERTIFICATION_TRACKER')
 
     print(f"Success: {success}, Number of chunks: {nchunks}, Number of rows: {nrows}")
 
     cur.close()
     con.close()
+
+
+def main():
+    # Desired query
+    query2 = '''{
+        boards(ids: 8283305838) {
+            items_page {
+                cursor
+                items {
+                    group {
+                        id
+                        title
+                }
+                    id
+                    name
+                    column_values {
+                        id
+                        text
+                        type
+                    }
+                }
+            }
+        }
+    }'''
+
+    # Capture post request query response
+    json_data = run_json_query(query2).json()
+
+    # View the post request response
+    # pprint(json_data)
+
+    # Create DataFrame using post request reponse
+    df = pd.DataFrame(extract_items(json_data))
+
+    # Modify DataFrame
+    mod_df = modify_df(df)
+
+    # Write Dataframe to excel
+    # mod_df.to_excel('MondayData.xlsx')
+
+    # Write Dataframe to Snowflake
+    write_to_snowflake(mod_df)
+
 
 if __name__ == "__main__":
     main()
