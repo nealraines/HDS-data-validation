@@ -15,7 +15,7 @@ from snowflake.connector.pandas_tools import write_pandas
 from datetime import datetime
 
 
-def run_json_query(query2):
+def run_json_query(query2: str):
     """ Makes post request with given headers and query to given api address
 
     Args:
@@ -104,7 +104,7 @@ def create_df(all_items):
 
 
 def modify_df(df):
-    """ Modify dataframe by renaming columns, droping subitems, and adjusting report date format
+    """ Modify dataframe by renaming columns, dropping subitems, and adjusting report date format
 
     Args:
         df (pandas dataframe): dataframe containing extracted JSON items
@@ -137,7 +137,7 @@ def modify_df(df):
     'progress_mkmrbg9g':'PROGRESS',
     'text_mkm73rje':'DATA_CONTACTS'}
 
-    df = df.drop('subitems_Mjj6XJ8d', axis=1)
+    df = df.drop(labels='subitems_Mjj6XJ8d', axis=1)
 
     df.rename(columns=column_renames, inplace=True)
     df['REPORT_DATE'] = datetime.today().strftime('%Y-%m-%d')
@@ -152,7 +152,7 @@ def write_to_snowflake(df):
         df (pandas dataframe): pandas dataframe containing extracted JSON items
     """
     con = snowflake.connector.connect(
-        user="jonathan.wheeler@hdsupply.com",  # You can get it by executing in UI: desc user <username>;
+        user="neal.raines@hdsupply.com",  # You can get it by executing in UI: desc user <username>;
         account="data.us-central1.gcp",  # Add all of the account-name between https:// and snowflakecomputing.com in URL
         authenticator="externalbrowser",
         warehouse='DATA_GOVERNANCE_WH1',
@@ -202,10 +202,13 @@ def main():
     json_data = run_json_query(query2).json()
 
     # View the post request response
-    # pprint(json_data)
+    # print(json_data)
 
-    # Create DataFrame using post request reponse
-    df = pd.DataFrame(extract_items(json_data))
+    # Extract all Data
+    extracted_data = extract_items(json_data)
+
+    # Create DataFrame using post request response
+    df = pd.DataFrame(create_df(extracted_data))
 
     # Modify DataFrame
     mod_df = modify_df(df)
