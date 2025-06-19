@@ -4,11 +4,9 @@
 # Date: 6/9/2025
 # Description: Pulls data from Monday.com into Snowflake
 
-from datetime import date
 import pandas as pd
-import os
 import requests
-import json
+# import json
 import snowflake.connector
 import snowflake
 from snowflake.connector.pandas_tools import write_pandas
@@ -25,7 +23,9 @@ def run_json_query(query2: str) -> requests.Response:
         (requests.Response Object): response object from post request
         """
     # API key:
-    api_key = "eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjQ3MzgxNDg4NywiYWFpIjoxMSwidWlkIjozNTUxMzQ1MywiaWFkIjoiMjAyNS0wMi0xN1QyMDo0NDoyOC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6OTM1Mzk1MywicmduIjoidXNlMSJ9.GREM3F1cLzck1rhK1zwNo0a91pwKiYw7OAOhhPrRKfA"
+    api_key = ("eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjQ3MzgxNDg4NywiYWFpIjoxMSwidWlkIjozNTUxMzQ1MywiaWFkIjoiMjAyNS0wMi0xN1Q"
+               "yMDo0NDoyOC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6OTM1Mzk1MywicmduIjoidXNlMSJ9.GREM3F1cLzck1rhK1z"
+               "wNo0a91pwKiYw7OAOhhPrRKfA")
 
     # API url:
     api_url = "https://api.monday.com/v2"
@@ -77,19 +77,19 @@ def extract_items(json_data: dict) -> list:
         items = json_data['data']['boards'][0]['items_page']['items']
         cursor = json_data['data']['boards'][0]['items_page']['cursor']
         all_items.extend(items)
-        print(cursor)
+        # print(cursor)
 
     return all_items
 
 
-def create_df(all_items: list) -> pd.DataFrame:
+def create_df(all_items: list) -> list:
     """ Creates pandas dataframe containing data from all items in all_items
 
     Args:
         all_items (list): list of all items from json_data dictionary:
 
     Returns:
-        extracted_data (pandas dataframe): pandas dataframe containing data from all items in all_items
+        extracted_data (list): data from all items in all_items
     """
     extracted_data = []
 
@@ -151,9 +151,12 @@ def write_to_snowflake(df: pd.DataFrame):
     Args:
         df (pandas dataframe): pandas dataframe containing extracted JSON items
     """
+    print("Enter Snowflake username (Ex. neal.raines@hdsupply.com or jonathan.wheeler@hdsupply.com)")
+    print("You can retrieve it by executing in UI: desc user <username>;")
+    usr = input("username: ")
     con = snowflake.connector.connect(
-        user="neal.raines@hdsupply.com",  # You can get it by executing in UI: desc user <username>;
-        account="data.us-central1.gcp",  # Add all of the account-name between https:// and snowflakecomputing.com in URL
+        user=usr,
+        account="data.us-central1.gcp",  # Add account-name between https:// and snowflakecomputing.com in URL
         authenticator="externalbrowser",
         warehouse='DATA_GOVERNANCE_WH1',
         database='DM_DATA_GOVERNANCE',
