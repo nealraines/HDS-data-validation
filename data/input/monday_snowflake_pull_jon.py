@@ -15,7 +15,7 @@ from snowflake.connector.pandas_tools import write_pandas
 from datetime import datetime
 
 
-def run_json_query(query2: str):
+def run_json_query(query2: str) -> requests.Response:
     """ Makes post request with given headers and query to given api address
 
     Args:
@@ -37,7 +37,7 @@ def run_json_query(query2: str):
     return requests.post(url=api_url, json=query_data, headers=headers)  # make request
 
 
-def extract_items(json_data):
+def extract_items(json_data: dict) -> list:
     """ Extracts all items out of Json_data dictionary
 
     Args:
@@ -82,7 +82,7 @@ def extract_items(json_data):
     return all_items
 
 
-def create_df(all_items):
+def create_df(all_items: list) -> pd.DataFrame:
     """ Creates pandas dataframe containing data from all items in all_items
 
     Args:
@@ -103,7 +103,7 @@ def create_df(all_items):
     return extracted_data
 
 
-def modify_df(df):
+def modify_df(df: pd.DataFrame) -> pd.DataFrame:
     """ Modify dataframe by renaming columns, dropping subitems, and adjusting report date format
 
     Args:
@@ -145,7 +145,7 @@ def modify_df(df):
     return df
 
 
-def write_to_snowflake(df):
+def write_to_snowflake(df: pd.DataFrame):
     """ Connect to snowflake database and write df
 
     Args:
