@@ -144,7 +144,7 @@ def modify_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def write_to_snowflake(df: pd.DataFrame):
+def write_to_snowflake(df: pd.DataFrame) -> None:
     """ Connect to snowflake database and write df
 
     Args:
