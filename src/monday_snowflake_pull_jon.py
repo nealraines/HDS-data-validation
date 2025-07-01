@@ -1,7 +1,8 @@
 # -*- coding: UTF-8 -*-
 # Author: Jon Wheeler
-# Modified By: Neal Raines
-# Date: 6/9/2025
+# Create Date: 6/1/2025
+# Updated By: Neal Raines
+# Updated Date: 7/1/2025
 # Description: Pulls data from Monday.com into Snowflake
 
 import pandas as pd
