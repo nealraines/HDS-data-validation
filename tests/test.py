@@ -5,18 +5,27 @@
 
 import pytest
 
-def setup_func():
-    print("set up test fixtures")
+class SimpleCache:
+    def __init__(self):
+        self.store = {}
 
+    def set(self, key, value):
+        self.store[key] = value
 
-def teardown_func():
-    print("tear down test fixtures")
+    def get(self, key):
+        return self.store.get(key, None)
 
 @pytest.fixture
-def test_evens():
-    for i in range(0, 5):
-        yield check_even, i, i*3
+def cache():
+    # setup
+    test_cache = SimpleCache()
+    yield test_cache
+    # teardown
+    test_cache.store.clear()
 
+def test_cache_set_and_get(cache):
+    cache.set("test_key", "test_value")
+    assert cache.get("test_key") == "test_value", "Get value from cashe"
 
-def check_even(n, nn):
-    assert n % 2 == 0 or nn % 2 == 0
+def test_cache_miss_returns_none(cache):
+    assert cache.get("nonexistent_key") is None, "Return none on missed key"
