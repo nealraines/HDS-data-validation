@@ -289,7 +289,7 @@ def alt_uom_mod(df: pd.DataFrame,
     no_mod_df = no_mod_df[no_mod_df['conversion_numerator'] == True]['material_number']
 
     df = df[df['material_number'].isin(no_mod_df)]
-
+    df = df[(df['base_uom'] != df['alt_uom']) & (df['conversion_numerator'] > 1)]
     return format_df(df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
 
 
@@ -460,7 +460,8 @@ def upc_required(df: pd.DataFrame,
                  issue_code: str = 'NO_UPC',
                  error_message: str = 'Valid UPC/GTIN is required for all valid package levels.') -> pd.DataFrame:
     """
-    Valid UPC/GTIN is required for all valid PKG levels (those which are not 1:1) except PAL/PALLET
+    Valid UPC/GTIN is required for all valid PKG levels (those which are not 1:1) except PAL/PALLET.
+    UOMs with a conversion denominator > 1 are exempt from this evaluation.
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
         :param issue_category: Owner of the issue's resolution.
         :param issue_code: Short form code identifying the issue type.
@@ -470,6 +471,7 @@ def upc_required(df: pd.DataFrame,
     no_upc_df = df[df['upc'].isna()]
     no_upc_df = no_upc_df[no_upc_df['alt_uom'] != 'PAL']
     no_upc_df = no_upc_df[~((no_upc_df['base_uom'] != no_upc_df['alt_uom']) & (no_upc_df['conversion_numerator'] == no_upc_df['conversion_denominator']))]
+    no_upc_df = no_upc_df[no_upc_df['conversion_denominator'] <= 1]
 
     return format_df(no_upc_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
 
@@ -497,8 +499,9 @@ def unique_upc(df: pd.DataFrame,
         upc_key = duplicate_upc_df.loc[i, 'upc']
         error_dict = str({upc_key: error_list})
 
-        duplicate_upc_df.loc[i, 'error_message'] = f'Duplicate UPC {error_dict}'
+        duplicate_upc_df.loc[i, 'error_message'] = error_dict
 
     df = df.merge(duplicate_upc_df, on=['material_number', 'alt_uom'], how='inner')
-
+    df = df[['material_number', 'alt_uom', 'error_message']]
+    df = df.groupby(by=['material_number', 'alt_uom'], as_index=False).agg(upc_collapse).reset_index(drop=True)
     return format_df(df, issue_category=issue_category, issue_code=issue_code, error_message=df['error_message'])
