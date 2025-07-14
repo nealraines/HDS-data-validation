@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 # Author: Neal Raines
 # Create Date: 7/1/2025
-# Description: Merkle_2.0 test file
+# Description: Merkle_2 test file
 
 import pytest
 import os
@@ -9,9 +9,9 @@ import os
 import pandas as pd
 import pyodbc as odbc
 
-import exempt_pcat
-from queries import duplicate_upc
-from utils import upc_collapse, alt_modulus, format_df
+import Merkle_2.exempt_pcat
+from Merkle_2.queries import duplicate_upc
+from Merkle_2.utils import upc_collapse, alt_modulus, format_df
 
 class SimpleCache:
     def __init__(self):
