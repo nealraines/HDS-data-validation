@@ -1,11 +1,8 @@
 from datetime import date
-import os
 
 import pandas as pd
-import pyodbc as odbc
 
 from exempt_pcat import exempt_pcat
-from queries import duplicate_upc
 from utils import upc_collapse, alt_modulus, format_df
 
 
@@ -478,20 +475,19 @@ def upc_required(df: pd.DataFrame,
 
 
 def unique_upc(df: pd.DataFrame,
+               upc_df: pd.DataFrame,
                issue_category: str = 'SUPPLY_CHAIN',
                issue_code: str = 'DUPLICATE_UPC') -> None:
     """
     UPC/GTIN values must be Valid and must be unique for each AUOM entry within the record and across all other records
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
+        :param upc_df: All UPCs from ECC.MEAN table for comparison to stock SKUs.
         :param issue_category: Owner of the issue's resolution.
         :param issue_code: Short form code identifying the issue type.
         :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
     """
 
-    with odbc.connect(os.environ.get('Snowflake_Connection_String')) as con:
-        duplicate_upc_df = pd.read_sql_query(sql=duplicate_upc, con=con, dtype='string')
-
-    duplicate_upc_df = duplicate_upc_df.groupby('upc').agg(upc_collapse).reset_index()
+    duplicate_upc_df = upc_df.groupby('upc').agg(upc_collapse).reset_index()
     duplicate_upc_df['key'] = duplicate_upc_df['error_message']
     duplicate_upc_df = duplicate_upc_df.explode('key').reset_index(drop=True)
     duplicate_upc_df[['material_number', 'alt_uom']] = duplicate_upc_df['key'].str.split(' - ', expand=True)

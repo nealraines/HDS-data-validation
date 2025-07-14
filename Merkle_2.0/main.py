@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import pyodbc as odbc
 
-from queries import material_data
+from queries import material_data, duplicate_upc
 from stored_procedures import *
 
 def main():
@@ -20,6 +20,8 @@ def main():
                                                                            'height': 'float64',
                                                                            'volume': 'float64',
                                                                            'gross_weight': 'float64'})
+
+        upc_df = pd.read_sql_query(sql=duplicate_upc, con=con, dtype='string')
 
     response_array: list = []
 
@@ -41,8 +43,7 @@ def main():
     response_array.append(larger_gross_weight_failure(material_df))
     response_array.append(invalid_gtin(material_df))
     response_array.append(upc_required(material_df))
-    response_array.append(package_dimensions(material_df))
-    response_array.append(unique_upc(material_df))
+    response_array.append(unique_upc(material_df, upc_df))
 
     error_df = pd.concat(response_array)
     error_df.to_csv('error_output.csv', index=False)
