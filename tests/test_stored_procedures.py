@@ -228,10 +228,9 @@ class TestDataframe:
         # print(a.to_string())
         return a
 
-
-
-
-
+    def get_expected_df_by_mat_auom(self, material_auom_pairs: list[tuple]) -> pd.DataFrame:
+        a = self.df[self.df[['material_number', 'auom']].apply(tuple, axis=1).isin(material_auom_pairs)]
+        return a
 
 @pytest.fixture
 def test_dataframe():
