@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 from src.utils import format_df
-from src.stored_procedures import upc_required
+from src.stored_procedures import *
 
 
 def test_upc_required(test_dataframe):
@@ -193,20 +193,21 @@ def test_package_dimensions(test_dataframe):
     issue_code: str = 'INVALID_DIMENSIONS'
     error_message: str = 'Dimensions are missing or contain all default values (1)'
 
+    test_num = 1
     ### TEST 1 -- Catch Packaging Levels with Dims of 0 ###
     TestDataframe(test_dataframe).set(1, 'length', 0)
     # set the expected error df by passing SKUs adjusted above that should fail
-    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['1'], )
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
-                             error_message=error_message)
+                             error_message=error_message).reset_index(drop=True)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
-                              issue_code=issue_code, error_message=error_message)
+    actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
     try:
         pd.testing.assert_frame_equal(actual_out, expected_out)
     except AssertionError as e:
-        print(e, "\n")
+        print("\n", "[FAIL] Test #", test_num, ": ",e, "\n")
 
 # example test class for reference
 class TestDataframe:
@@ -229,7 +230,7 @@ class TestDataframe:
         return a
 
     def get_expected_df_by_mat_auom(self, material_auom_pairs: list[tuple]) -> pd.DataFrame:
-        a = self.df[self.df[['material_number', 'auom']].apply(tuple, axis=1).isin(material_auom_pairs)]
+        a = self.df[self.df[['material_number', 'alt_uom']].apply(tuple, axis=1).isin(material_auom_pairs)]
         return a
 
 @pytest.fixture
