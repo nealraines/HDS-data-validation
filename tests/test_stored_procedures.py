@@ -131,7 +131,7 @@ def test_upc_required(test_dataframe):
     TestDataframe(test_dataframe).set(test_num,'upc',np.nan)
     TestDataframe(test_dataframe).set(test_num,'conversion_denominator',2)
     # set the expected error df by passing SKUs adjusted above that should fail
-    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','5','6'],)
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','5','6'],)
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
     # pass actual df through function
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
