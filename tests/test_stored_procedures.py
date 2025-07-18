@@ -188,6 +188,26 @@ def test_invalid_gtin(test_dataframe):
     # TestDataframe(test_dataframe).out()
     assert True
 
+def test_package_dimensions(test_dataframe):
+    issue_category: str = 'SUPPLY_CHAIN'
+    issue_code: str = 'INVALID_DIMENSIONS'
+    error_message: str = 'Dimensions are missing or contain all default values (1)'
+
+    ### TEST 1 -- Catch Packaging Levels with Dims of 0 ###
+    TestDataframe(test_dataframe).set(1, 'length', 0)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['1'], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # compare actual and expected
+    try:
+        pd.testing.assert_frame_equal(actual_out, expected_out)
+    except AssertionError as e:
+        print(e, "\n")
+
 # example test class for reference
 class TestDataframe:
     def __init__(self, df):
