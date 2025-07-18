@@ -194,8 +194,10 @@ def test_package_dimensions(test_dataframe):
     error_message: str = 'Dimensions are missing or contain all default values (1)'
 
     test_num = 1
-    ### TEST 1 -- Catch Packaging Levels with Dims of 0 ###
+    ### TEST 1 -- Catch Packaging Levels with any dims as 0 ###
     TestDataframe(test_dataframe).set(1, 'length', 0)
+    TestDataframe(test_dataframe).set(2, 'material_number', 1)
+    TestDataframe(test_dataframe).set(2, 'alt_uom', 'EA')
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
@@ -208,6 +210,64 @@ def test_package_dimensions(test_dataframe):
         pd.testing.assert_frame_equal(actual_out, expected_out)
     except AssertionError as e:
         print("\n", "[FAIL] Test #", test_num, ": ",e, "\n")
+
+    test_num = 2
+    ### TEST 2 -- Catch Packaging Levels with Dims as all 1s ###
+    TestDataframe(test_dataframe).set(1, 'length', 1)
+    TestDataframe(test_dataframe).set(1, 'width', 1)
+    TestDataframe(test_dataframe).set(1, 'height', 1)
+    TestDataframe(test_dataframe).set(1, 'weight', 1)
+    TestDataframe(test_dataframe).set(2, 'material_number', 1)
+    TestDataframe(test_dataframe).set(2, 'alt_uom', 'EA')
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                                    issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    try:
+        pd.testing.assert_frame_equal(actual_out, expected_out)
+    except AssertionError as e:
+        print("\n", "[FAIL] Test #", test_num, ": ", e, "\n")
+
+    test_num = 3
+    ### TEST 3 -- Catch Packaging Levels with any null dims ###
+    TestDataframe(test_dataframe).set(1, 'length', np.nan)
+    TestDataframe(test_dataframe).set(2, 'material_number', 1)
+    TestDataframe(test_dataframe).set(2, 'alt_uom', 'EA')
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                                    issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    try:
+        pd.testing.assert_frame_equal(actual_out, expected_out)
+    except AssertionError as e:
+        print("\n", "[FAIL] Test #", test_num, ": ", e, "\n")
+
+    test_num = 4
+    ### TEST 4 -- Confirm conversion num 1 is being ignored ###
+    TestDataframe(test_dataframe).set(4, 'length', np.nan)
+    TestDataframe(test_dataframe).set(4, 'material_number', 3)
+    TestDataframe(test_dataframe).set(4, 'alt_uom', 'RL')
+    TestDataframe(test_dataframe).set(4, 'conversion_numerator', 1)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                                    issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    try:
+        pd.testing.assert_frame_equal(actual_out, expected_out)
+    except AssertionError as e:
+        print("\n", "[FAIL] Test #", test_num, ": ", e, "\n")
 
 # example test class for reference
 class TestDataframe:
