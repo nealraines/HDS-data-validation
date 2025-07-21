@@ -498,8 +498,9 @@ def test_package_dimensions(test_dataframe):
     issue_code: str = 'INVALID_DIMENSIONS'
     error_message: str = 'Dimensions are missing or contain all default values (1)'
 
-    test_num = 1
     ### TEST 1 -- Catch Packaging Levels with any dims as 0 ###
+    test_num = 1
+
     TestDataframe(test_dataframe).set(1, 'length', 0)
     TestDataframe(test_dataframe).set(2, 'material_number', 1)
     TestDataframe(test_dataframe).set(2, 'alt_uom', 'EA')
@@ -513,8 +514,9 @@ def test_package_dimensions(test_dataframe):
     # compare actual and expected
     run_test(actual_out, expected_out, test_num)
 
-    test_num = 2
     ### TEST 2 -- Catch Packaging Levels with Dims as all 1s ###
+    test_num = 2
+
     TestDataframe(test_dataframe).set(1, 'length', 1)
     TestDataframe(test_dataframe).set(1, 'width', 1)
     TestDataframe(test_dataframe).set(1, 'height', 1)
@@ -531,8 +533,9 @@ def test_package_dimensions(test_dataframe):
     # compare actual and expected
     run_test(actual_out, expected_out, test_num)
 
-    test_num = 3
     ### TEST 3 -- Catch Packaging Levels with any null dims ###
+    test_num = 3
+
     TestDataframe(test_dataframe).set(1, 'length', np.nan)
     TestDataframe(test_dataframe).set(2, 'material_number', 1)
     TestDataframe(test_dataframe).set(2, 'alt_uom', 'EA')
@@ -546,8 +549,9 @@ def test_package_dimensions(test_dataframe):
     # compare actual and expected
     run_test(actual_out, expected_out, test_num)
 
-    test_num = 4
     ### TEST 4 -- Confirm conversion num 1 is being ignored ###
+    test_num = 4
+
     TestDataframe(test_dataframe).set(4, 'length', np.nan)
     TestDataframe(test_dataframe).set(4, 'material_number', 3)
     TestDataframe(test_dataframe).set(4, 'alt_uom', 'RL')
@@ -567,8 +571,9 @@ def test_is_blank_or_zero(test_dataframe):
     issue_code: str = ''
     error_message: str = ''
 
-    test_num = 1
     ### TEST 1 -- Catch empty values in specified column ###
+    test_num = 1
+
     TestDataframe(test_dataframe).set(1, 'upc', None)
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['1'])
@@ -580,8 +585,9 @@ def test_is_blank_or_zero(test_dataframe):
     # compare actual and expected
     run_test(actual_out, expected_out, test_num)
 
-    test_num = 2
     ### TEST 2 -- Catch 0s in specified column ###
+    test_num = 2
+
     TestDataframe(test_dataframe).set(2, 'upc', 0)
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['1','2'])
