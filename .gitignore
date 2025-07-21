@@ -1,3 +1,5 @@
 # IDE's project files
 .idea
 .venv
+src\__pycashe__
+tests\__pycashe__
