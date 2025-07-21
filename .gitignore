@@ -1,3 +1,5 @@
 # IDE's project files
 .idea
 .venv
+src\__pycache__
+tests\__pycache__
