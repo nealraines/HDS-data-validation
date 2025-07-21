@@ -594,6 +594,63 @@ def test_is_blank_or_zero(test_dataframe):
     # compare actual and expected
     run_test(actual_out, expected_out, test_num)
 
+def test_is_alt_uom_volume_zero(test_dataframe):
+    issue_category: str = 'SUPPLY_CHAIN'
+    issue_code: str = 'MISSING_VOLUME'
+    error_message: str = 'Volume should not be blank for AUOM with Numerator > 1.'
+
+    ### TEST 1 -- Only Applies to PKG Levels with Conversion Factor > 1 ###
+    test_num = 1
+
+    TestDataframe(test_dataframe).set(2, 'material_number', 1)
+    TestDataframe(test_dataframe).set(2, 'alt_uom', 'RL')
+    TestDataframe(test_dataframe).set(2, 'conversion_numerator', 1)
+    TestDataframe(test_dataframe).set(2, 'volume', 0)
+    TestDataframe(test_dataframe).set(3, 'material_number', '1')
+    TestDataframe(test_dataframe).set(3, 'alt_uom', 'PKG')
+    TestDataframe(test_dataframe).set(3, 'conversion_numerator', 6)
+    TestDataframe(test_dataframe).set(3, 'volume', 0)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'PKG')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = is_alt_uom_volume_zero(df=TestDataframe(test_dataframe).get(),
+                                  issue_category=issue_category,
+                                  issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 2 -- Catches Alt UOMs with volumes of 0 ###
+    test_num = 2
+
+    TestDataframe(test_dataframe).set(5, 'volume', 0)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'PKG'), ('5', 'CS')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = is_alt_uom_volume_zero(df=TestDataframe(test_dataframe).get(),
+                                  issue_category=issue_category,
+                                  issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 3 -- Catches Alt UOMs with empty volumes ###
+    test_num = 3
+    TestDataframe(test_dataframe).set(6, 'volume', None)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(
+        material_auom_pairs=[('1', 'PKG'), ('5', 'CS'), ('6', 'CS')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = is_alt_uom_volume_zero(df=TestDataframe(test_dataframe).get(),
+                                        issue_category=issue_category,
+                                        issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    run_test(actual_out, expected_out, test_num)
+
 # example test class for reference
 class TestDataframe:
     def __init__(self, df):
