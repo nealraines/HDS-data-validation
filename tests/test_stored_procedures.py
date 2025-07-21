@@ -180,6 +180,8 @@ def test_invalid_gtin(test_dataframe):
         gtin_df = gtin_df[gtin_df['alt_uom'] != 'PAL']
         gtin_df = gtin_df[~((gtin_df['base_uom'] != gtin_df['alt_uom']) & (gtin_df['conversion_numerator'] == gtin_df['conversion_denominator']))]
 
+        edit
+
         return format_df(gtin_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)"""
     # set output parameters
     issue_category: str = ''
