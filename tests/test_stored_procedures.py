@@ -40,90 +40,90 @@ def test_upc_required(test_dataframe):
     error_message: str = 'Valid UPC/GTIN is required for all valid package levels.'
 
     ### TEST 1 ###
+    test_num = 1
     # No change, control test; PASS
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 2 ###
+    test_num = 2
     # None upc; FAIL
-    TestDataframe(test_dataframe).set(2,'upc',None)
+    TestDataframe(test_dataframe).set(test_num,'upc',None)
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 3 ###
+    test_num = 3
     # null upc; FAIL
-    TestDataframe(test_dataframe).set(3,'upc',np.nan)
+    TestDataframe(test_dataframe).set(test_num,'upc',np.nan)
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 4 ###
+    test_num = 4
     # null upc with PAL alt_uom; PASS
-    TestDataframe(test_dataframe).set(4,'upc',np.nan)
-    TestDataframe(test_dataframe).set(4,'alt_uom','PAL')
+    TestDataframe(test_dataframe).set(test_num,'upc',np.nan)
+    TestDataframe(test_dataframe).set(test_num,'alt_uom','PAL')
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 5 ###
+    test_num = 5
     # null upc with (base == alt) & (num != denom); FAIL
-    TestDataframe(test_dataframe).set(5,'upc',np.nan)
-    TestDataframe(test_dataframe).set(5,'alt_uom','EA')
+    TestDataframe(test_dataframe).set(test_num,'upc',np.nan)
+    TestDataframe(test_dataframe).set(test_num,'alt_uom','EA')
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','5'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category, issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 6 ###
+    test_num = 6
     # null upc with (base == alt) & (num == denom); FAIL
-    TestDataframe(test_dataframe).set(6,'upc',np.nan)
-    TestDataframe(test_dataframe).set(6,'alt_uom','EA')
+    TestDataframe(test_dataframe).set(test_num,'upc',np.nan)
+    TestDataframe(test_dataframe).set(test_num,'alt_uom','EA')
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','5','6'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 7 ###
     test_num = 7
@@ -131,62 +131,365 @@ def test_upc_required(test_dataframe):
     TestDataframe(test_dataframe).set(test_num,'upc',np.nan)
     TestDataframe(test_dataframe).set(test_num,'conversion_denominator',2)
     # set the expected error df by passing SKUs adjusted above that should fail
-    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','5','6'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','5','6'],)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print("\n", "[FAIL] Test #", test_num, ": ",e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 8 ###
+    test_num = 8
     # null upc with (base != alt) & (num != denom); FAIL
-    TestDataframe(test_dataframe).set(8,'upc',np.nan)
+    TestDataframe(test_dataframe).set(test_num,'upc',np.nan)
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','5','6','8'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 9 ###
+    test_num = 9
     #null upc with denom < 1; FAIL
-    TestDataframe(test_dataframe).set(9,'upc',None)
-    TestDataframe(test_dataframe).set(9,'conversion_denominator',0)
+    TestDataframe(test_dataframe).set(test_num,'upc',None)
+    TestDataframe(test_dataframe).set(test_num,'conversion_denominator',0)
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','5','6','8','9'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
     ### TEST 10 ###
+    test_num = 10
     # no change; PASS
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','5','6','8','9'],)
-    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,issue_code=issue_code, error_message=error_message)
-    # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print(e, "\n")
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
 
 def test_invalid_gtin(test_dataframe):
-    # TestDataframe(test_dataframe).out()
-    assert True
+    """def invalid_gtin(df: pd.DataFrame,
+                     issue_category: str = 'SUPPLY_CHAIN',
+                     issue_code: str = 'INVALID_UPC',
+                     error_message: str = 'UPC failed check digit validation.') -> pd.DataFrame:
+
+        UPC does not match an approved format. Pallets and AUOMs that are 1:1 are excluded from this requirement.
+            :param df: Target DataFrame contain SKU/UOM data for evaluation.
+            :param issue_category: Owner of the issue's resolution.
+            :param issue_code: Short form code identifying the issue type.
+            :param error_message: Output detailing why the SKU/UOM was flagged.
+            :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
+
+        gtin_df = df[~df['upc'].isna()]
+        gtin_df = gtin_df[~gtin_df['upc'].str.match(r'^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$')]
+        gtin_df = gtin_df[gtin_df['alt_uom'] != 'PAL']
+        gtin_df = gtin_df[~((gtin_df['base_uom'] != gtin_df['alt_uom']) & (gtin_df['conversion_numerator'] == gtin_df['conversion_denominator']))]
+
+        return format_df(gtin_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)"""
+    # set output parameters
+    issue_category: str = ''
+    issue_code: str = 'INVALID_UPC'
+    error_message: str = 'UPC failed check digit validation.'
+
+    ### TEST 1 ###
+    test_num = 1
+    # No change, control test; PASS
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 2 ###
+    test_num = 2
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 3 ###
+    test_num = 3
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 4 ###
+    test_num = 4
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 5 ###
+    test_num = 5
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 6 ###
+    test_num = 6
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 7 ###
+    test_num = 7
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 8 ###
+    test_num = 8
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 9 ###
+    test_num = 9
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 10 ###
+    test_num = 10
+    # no change; PASS
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+
+def test_template(test_dataframe):
+    """"""
+    # set output parameters
+    issue_category: str = ''
+    issue_code: str = ''
+    error_message: str = ''
+
+    ### TEST 1 ###
+    test_num = 1
+    # No change, control test; PASS
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 2 ###
+    test_num = 2
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 3 ###
+    test_num = 3
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 4 ###
+    test_num = 4
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 5 ###
+    test_num = 5
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 6 ###
+    test_num = 6
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 7 ###
+    test_num = 7
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 8 ###
+    test_num = 8
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 9 ###
+    test_num = 9
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 10 ###
+    test_num = 10
+    # no change; PASS
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
 
 def test_package_dimensions(test_dataframe):
     issue_category: str = 'SUPPLY_CHAIN'
@@ -281,7 +584,7 @@ class TestDataframe:
     def set(self, index, column, value):
         self.df.at[index, column] = value
 
-    def get(self):
+    def get(self) -> pd.DataFrame:
         return self.df
 
     def get_expected_df(self, material_nums: list) -> pd.DataFrame:
@@ -310,6 +613,12 @@ def test_dataframe():
                            index=[1,2,3,4,5,6,7,8,9,10])
     return test_df
 
+def run_test(actual_out, expected_out, test_num) -> None:
+    # compare actual and expected
+    try:
+        pd.testing.assert_frame_equal(actual_out, expected_out)
+    except AssertionError as e:
+        print("\n", "[FAIL] Test #", test_num, ": ",e, "\n")
 
 
 """
