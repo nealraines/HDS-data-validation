@@ -511,10 +511,7 @@ def test_package_dimensions(test_dataframe):
     actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print("\n", "[FAIL] Test #", test_num, ": ",e, "\n")
+    run_test(actual_out, expected_out, test_num)
 
     test_num = 2
     ### TEST 2 -- Catch Packaging Levels with Dims as all 1s ###
@@ -532,10 +529,7 @@ def test_package_dimensions(test_dataframe):
     actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                                     issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print("\n", "[FAIL] Test #", test_num, ": ", e, "\n")
+    run_test(actual_out, expected_out, test_num)
 
     test_num = 3
     ### TEST 3 -- Catch Packaging Levels with any null dims ###
@@ -550,10 +544,7 @@ def test_package_dimensions(test_dataframe):
     actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                                     issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print("\n", "[FAIL] Test #", test_num, ": ", e, "\n")
+    run_test(actual_out, expected_out, test_num)
 
     test_num = 4
     ### TEST 4 -- Confirm conversion num 1 is being ignored ###
@@ -569,10 +560,39 @@ def test_package_dimensions(test_dataframe):
     actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                                     issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    try:
-        pd.testing.assert_frame_equal(actual_out, expected_out)
-    except AssertionError as e:
-        print("\n", "[FAIL] Test #", test_num, ": ", e, "\n")
+    run_test(actual_out, expected_out, test_num)
+
+def test_is_blank_or_zero(test_dataframe):
+    issue_category: str = 'SUPPLY_CHAIN'
+    issue_code: str = ''
+    error_message: str = ''
+
+    test_num = 1
+    ### TEST 1 -- Catch empty values in specified column ###
+    TestDataframe(test_dataframe).set(1, 'upc', None)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['1'])
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = is_blank_or_zero(df=TestDataframe(test_dataframe).get(), column_label='upc' ,issue_category=issue_category,
+                                    issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    run_test(actual_out, expected_out, test_num)
+
+    test_num = 2
+    ### TEST 2 -- Catch 0s in specified column ###
+    TestDataframe(test_dataframe).set(2, 'upc', 0)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['1','2'])
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = is_blank_or_zero(df=TestDataframe(test_dataframe).get(), column_label='upc',
+                                  issue_category=issue_category,
+                                  issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    run_test(actual_out, expected_out, test_num)
 
 # example test class for reference
 class TestDataframe:
