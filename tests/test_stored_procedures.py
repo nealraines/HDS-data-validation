@@ -663,7 +663,7 @@ def test_smaller_alt_uom(test_dataframe):
     issue_code: str = 'INVALID_VOLUME'
     error_message: str = 'Greater than or equal to volume of base unit.'
 
-    ### TEST 1 -- Only Applies to PKG Levels with Conversion Factor > 1 and AUOM != BUOM ###
+    ### TEST 1 -- Only Applies to PKG Levels with Conversion Denominator > 1 and AUOM != BUOM ###
     test_num = 1
 
     TestDataframe(test_dataframe).set(2, 'material_number', 1)
@@ -684,7 +684,30 @@ def test_smaller_alt_uom(test_dataframe):
     # compare actual and expected
     run_test(actual_out, expected_out, test_num)
 
+def test_larger_alt_uom(test_dataframe):
+    issue_category: str = 'SUPPLY_CHAIN'
+    issue_code: str = 'INVALID_VOLUME'
+    error_message: str = 'Less than or equal to volume of lower AUOM level.'
 
+    ### TEST 1 -- Only Applies to PKG Levels with Conversion Numerator > 1 and AUOM != BUOM ###
+    test_num = 1
+
+    TestDataframe(test_dataframe).set(1, 'volume', 1)
+    TestDataframe(test_dataframe).set(2, 'material_number', 1)
+    TestDataframe(test_dataframe).set(2, 'alt_uom', 'EA')
+    TestDataframe(test_dataframe).set(2, 'conversion_numerator', 1)
+    TestDataframe(test_dataframe).set(2, 'volume', 5)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = smaller_alt_volume(df=TestDataframe(test_dataframe).get(),
+                                        issue_category=issue_category,
+                                        issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    #print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'volume', 'conversion_numerator']].head())
+    run_test(actual_out, expected_out, test_num)
 
 # example test class for reference
 class TestDataframe:
