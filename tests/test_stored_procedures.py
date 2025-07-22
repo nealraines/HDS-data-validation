@@ -702,11 +702,54 @@ def test_larger_alt_uom(test_dataframe):
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message).reset_index(drop=True)
     # pass actual df through function
-    actual_out = smaller_alt_volume(df=TestDataframe(test_dataframe).get(),
+    actual_out = larger_alt_volume(df=TestDataframe(test_dataframe).get(),
                                         issue_category=issue_category,
                                         issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
     #print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'volume', 'conversion_numerator']].head())
+    run_test(actual_out, expected_out, test_num)
+
+def test_is_alt_uom_weight_zero(test_dataframe):
+    issue_category: str = 'SUPPLY_CHAIN'
+    issue_code: str = 'MISSING_WEIGHT'
+    error_message: str = 'Weight should not be blank or zero for AUOM with Numerator > 1.'
+
+    ### TEST 1 -- Only Applies to PKG Levels with Conversion Numerator > 1 and AUOM != BUOM WEIGHT = 0 ###
+    test_num = 1
+
+    TestDataframe(test_dataframe).set(1, 'gross_weight', 0)
+    TestDataframe(test_dataframe).set(2, 'material_number', '1')
+    TestDataframe(test_dataframe).set(2, 'alt_uom', 'EA')
+    TestDataframe(test_dataframe).set(2, 'conversion_numerator', 1)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = is_alt_uom_weight_zero(df=TestDataframe(test_dataframe).get(),
+                                    issue_category=issue_category,
+                                    issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    # print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'volume', 'conversion_numerator']].head())
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 2 -- Only Applies to PKG Levels with Conversion Numerator > 1 and AUOM != BUOM WEIGHT IS NULL ###
+    test_num = 2
+
+    TestDataframe(test_dataframe).set(3, 'gross_weight', None)
+    TestDataframe(test_dataframe).set(4, 'material_number', '3')
+    TestDataframe(test_dataframe).set(4, 'alt_uom', 'EA')
+    TestDataframe(test_dataframe).set(4, 'conversion_numerator', 1)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS'), ('3', 'CS')], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message).reset_index(drop=True)
+    # pass actual df through function
+    actual_out = is_alt_uom_weight_zero(df=TestDataframe(test_dataframe).get(),
+                                        issue_category=issue_category,
+                                        issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+    # compare actual and expected
+    print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'gross_weight', 'conversion_numerator']].head())
     run_test(actual_out, expected_out, test_num)
 
 # example test class for reference
