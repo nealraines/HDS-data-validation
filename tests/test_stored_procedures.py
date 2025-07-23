@@ -722,15 +722,17 @@ def test_is_alt_uom_weight_zero(test_dataframe):
     TestDataframe(test_dataframe).set(2, 'alt_uom', 'EA')
     TestDataframe(test_dataframe).set(2, 'conversion_numerator', 1)
     # set the expected error df by passing SKUs adjusted above that should fail
-    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
+    error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(
+        material_auom_pairs=[('1', 'CS')], )
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message).reset_index(drop=True)
     # pass actual df through function
     actual_out = is_alt_uom_weight_zero(df=TestDataframe(test_dataframe).get(),
-                                    issue_category=issue_category,
-                                    issue_code=issue_code, error_message=error_message).reset_index(drop=True)
+                                        issue_category=issue_category,
+                                        issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    # print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'volume', 'conversion_numerator']].head())
+    # print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'gross_weight', 'conversion_numerator']].head())
+    print(actual_out.head())
     run_test(actual_out, expected_out, test_num)
 
     ### TEST 2 -- Only Applies to PKG Levels with Conversion Numerator > 1 and AUOM != BUOM WEIGHT IS NULL ###
@@ -749,7 +751,8 @@ def test_is_alt_uom_weight_zero(test_dataframe):
                                         issue_category=issue_category,
                                         issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'gross_weight', 'conversion_numerator']].head())
+    # print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'gross_weight', 'conversion_numerator']].head())
+    print(actual_out.head())
     run_test(actual_out, expected_out, test_num)
 
 # example test class for reference
