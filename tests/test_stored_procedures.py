@@ -179,28 +179,6 @@ def test_is_alt_uom_volume_zero(test_dataframe):
 
 
 def test_upc_required(test_dataframe):
-    """ FULL UPC_REQUIRED FUNCTION:
-    def upc_required(df: pd.DataFrame,
-                 issue_category: str = 'SUPPLY_CHAIN',
-                 issue_code: str = 'NO_UPC',
-                 error_message: str = 'Valid UPC/GTIN is required for all valid package levels.') -> pd.DataFrame:
-
-    Valid UPC/GTIN is required for all valid PKG levels (those which are not 1:1) except PAL/PALLET.
-    UOMs with a conversion denominator > 1 are exempt from this evaluation.
-        :param df: Target DataFrame contain SKU/UOM data for evaluation.
-        :param issue_category: Owner of the issue's resolution.
-        :param issue_code: Short form code identifying the issue type.
-        :param error_message: Output detailing why the SKU/UOM was flagged.
-        :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
-
-    no_upc_df = df[df['upc'].isna()]
-    no_upc_df = no_upc_df[no_upc_df['alt_uom'] != 'PAL']
-    no_upc_df = no_upc_df[~((no_upc_df['base_uom'] != no_upc_df['alt_uom']) & (no_upc_df['conversion_numerator'] == no_upc_df['conversion_denominator']))]
-    no_upc_df = no_upc_df[no_upc_df['conversion_denominator'] <= 1]
-
-    return format_df(no_upc_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
-    """
-
     # set output parameters
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'NO_UPC'
@@ -368,11 +346,9 @@ def test_invalid_gtin(test_dataframe):
         gtin_df = gtin_df[gtin_df['alt_uom'] != 'PAL']
         gtin_df = gtin_df[~((gtin_df['base_uom'] != gtin_df['alt_uom']) & (gtin_df['conversion_numerator'] == gtin_df['conversion_denominator']))]
 
-        edit 2 for test
-
         return format_df(gtin_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)"""
     # set output parameters
-    issue_category: str = ''
+    issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'INVALID_UPC'
     error_message: str = 'UPC failed check digit validation.'
 
@@ -392,7 +368,7 @@ def test_invalid_gtin(test_dataframe):
     ### TEST 2 ###
     test_num = 2
     # no change; PASS
-
+    TestDataframe(test_dataframe).set(test_num,'upc',None)
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
