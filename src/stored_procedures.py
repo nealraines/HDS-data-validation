@@ -141,12 +141,17 @@ def larger_alt_volume(df: pd.DataFrame,
         :param error_message: Output detailing why the SKU/UOM was flagged.
         :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
     """
+    print("\n","### larger_alt_volume() ###","\n")
     alt_uom_df = df[(df['base_uom'] != df['alt_uom']) & (df['conversion_numerator'] > 1)].reset_index(drop=True)
+    print("PROCEDURE OUTPUT 1:","\n",alt_uom_df.to_string())
     alt_uom_df['volume_test'] = alt_uom_df.groupby('material_number')['volume'].rolling(2).min().reset_index(drop=True)
+    print("PROCEDURE OUTPUT 2:","\n",alt_uom_df.to_string())
     alt_uom_df = alt_uom_df.dropna(subset='volume_test')
+    print("PROCEDURE OUTPUT 3:","\n",alt_uom_df.to_string())
 
     alt_uom_df = alt_uom_df[alt_uom_df['volume'] == alt_uom_df['volume_test']].drop(columns=['volume_test'])
-
+    print("PROCEDURE OUTPUT 4:","\n",alt_uom_df.to_string())
+    print("\n")
     return format_df(alt_uom_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
 
 
