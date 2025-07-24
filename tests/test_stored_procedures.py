@@ -327,30 +327,191 @@ def test_upc_required(test_dataframe):
     # run comparison assertion
     run_test(actual_out, expected_out, test_num)
 
-
+"""
 def test_invalid_gtin(test_dataframe):
-    """def invalid_gtin(df: pd.DataFrame,
-                     issue_category: str = 'SUPPLY_CHAIN',
-                     issue_code: str = 'INVALID_UPC',
-                     error_message: str = 'UPC failed check digit validation.') -> pd.DataFrame:
-
-        UPC does not match an approved format. Pallets and AUOMs that are 1:1 are excluded from this requirement.
-            :param df: Target DataFrame contain SKU/UOM data for evaluation.
-            :param issue_category: Owner of the issue's resolution.
-            :param issue_code: Short form code identifying the issue type.
-            :param error_message: Output detailing why the SKU/UOM was flagged.
-            :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
-
-        gtin_df = df[~df['upc'].isna()]
-        gtin_df = gtin_df[~gtin_df['upc'].str.match(r'^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$')]
-        gtin_df = gtin_df[gtin_df['alt_uom'] != 'PAL']
-        gtin_df = gtin_df[~((gtin_df['base_uom'] != gtin_df['alt_uom']) & (gtin_df['conversion_numerator'] == gtin_df['conversion_denominator']))]
-
-        return format_df(gtin_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)"""
     # set output parameters
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'INVALID_UPC'
     error_message: str = 'UPC failed check digit validation.'
+
+    ### TEST 1 ###
+    test_num = 1
+    # No change, control test; PASS
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 2 ###
+    test_num = 2
+    # null UPC; Pass
+    TestDataframe(test_dataframe).set(test_num,'upc',None)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 3 ###
+    test_num = 3
+    # valid GTIN-8; PASS
+    TestDataframe(test_dataframe).set(test_num,'upc',"40170725")
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 4 ###
+    test_num = 4
+    # valid GTIN-13; PASS
+    TestDataframe(test_dataframe).set(test_num,'upc',"9999999999994")
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    
+    ### TEST 5 ###
+    test_num = 5
+    # invalid check digit in GTIN-13; FAIL
+    TestDataframe(test_dataframe).set(test_num,'upc',"9999999999999")
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['5'], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+    
+
+    ### TEST 6 ###
+    test_num = 6
+    # invalid check digit GTIN-13 with 'PAL' AUOM; PASS
+    TestDataframe(test_dataframe).set(test_num,'upc',"9999999999999")
+    TestDataframe(test_dataframe).set(test_num,'alt_uom',"PAL")
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['5'], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 7 ###
+    test_num = 7
+    # invalid check digit GTIN-13 with 1:1 conversion; PASS
+    TestDataframe(test_dataframe).set(test_num,'upc',"9999999999999")
+    TestDataframe(test_dataframe).set(test_num,'conversion_numerator',1)
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['5'], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 8 ###
+    test_num = 8
+    # invalid GTIN-8 check digit; FAIL
+    TestDataframe(test_dataframe).set(test_num,'upc',"01234568")
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['5','8'], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 9 ###
+    test_num = 9
+    # invalid GTIN-12 check digit; FAIL
+    TestDataframe(test_dataframe).set(test_num,'upc',"999999999999")
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['5','8','9'], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+
+    ### TEST 10 ###
+    test_num = 10
+    # no change; PASS
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['5','8','9'], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_num)
+"""
+
+def test_unique_upc(test_dataframe):
+    """
+    def unique_upc(df: pd.DataFrame,
+                   upc_df: pd.DataFrame,
+                   issue_category: str = 'SUPPLY_CHAIN',
+                   issue_code: str = 'DUPLICATE_UPC') -> pd.DataFrame:
+
+        UPC/GTIN values must be Valid and must be unique for each AUOM entry within the record and across all other records
+            :param df: Target DataFrame contain SKU/UOM data for evaluation.
+            :param upc_df: All UPCs from ECC.MEAN table for comparison to stock SKUs.
+            :param issue_category: Owner of the issue's resolution.
+            :param issue_code: Short form code identifying the issue type.
+            :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
+
+        duplicate_upc_df = upc_df.groupby('upc').agg(upc_collapse).reset_index()
+        duplicate_upc_df['key'] = duplicate_upc_df['error_message']
+        duplicate_upc_df = duplicate_upc_df.explode('key').reset_index(drop=True)
+        duplicate_upc_df[['material_number', 'alt_uom']] = duplicate_upc_df['key'].str.split(' - ', expand=True)
+
+        for i in range(len(duplicate_upc_df)):
+            error_list = duplicate_upc_df.loc[i, 'error_message']
+            upc_key = duplicate_upc_df.loc[i, 'upc']
+            error_dict = str({upc_key: error_list})
+
+            duplicate_upc_df.loc[i, 'error_message'] = error_dict
+
+        df = df.merge(duplicate_upc_df, on=['material_number', 'alt_uom'], how='inner')
+        df = df[['material_number', 'alt_uom', 'error_message']]
+        df = df.groupby(by=['material_number', 'alt_uom'], as_index=False).agg(upc_collapse).reset_index(drop=True)
+        return format_df(df, issue_category=issue_category, issue_code=issue_code, error_message=df['error_message'])
+    """
+# set output parameters
+    issue_category: str = 'SUPPLY_CHAIN'
+    issue_code: str = 'DUPLICATE_UPC'
+    error_message: str = ''
 
     ### TEST 1 ###
     test_num = 1
@@ -368,7 +529,7 @@ def test_invalid_gtin(test_dataframe):
     ### TEST 2 ###
     test_num = 2
     # no change; PASS
-    TestDataframe(test_dataframe).set(test_num,'upc',None)
+
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
@@ -666,7 +827,8 @@ def test_dataframe():
                                "alt_uom": ['CS','CS','CS','CS','CS','CS','CS','CS','CS','CS'],
                                "conversion_numerator":  [2,2,2,2,2,2,2,2,2,2],
                                "conversion_denominator": [1,1,1,1,1,1,1,1,1,1],
-                               "upc": ['001','002','003','004','005','006','007','008','009','010'],
+                               "upc": ['01234567','01234567','01234567','01234567','01234567','01234567','01234567',
+                                       '01234567','01234567','01234567'],
                                "length": [5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12],
                                "width": [5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12],
                                "height": [5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12,5.12],
