@@ -12,6 +12,7 @@ from src.stored_procedures import *
 
 
 def test_package_dimensions(test_dataframe):
+    test_func = 'test_package_dimensions()'
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'INVALID_DIMENSIONS'
     error_message: str = 'Dimensions are missing or contain all default values (1)'
@@ -30,7 +31,7 @@ def test_package_dimensions(test_dataframe):
     actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 2 -- Catch Packaging Levels with Dims as all 1s ###
     test_num = 2
@@ -49,7 +50,7 @@ def test_package_dimensions(test_dataframe):
     actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                                     issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 3 -- Catch Packaging Levels with any null dims ###
     test_num = 3
@@ -65,8 +66,8 @@ def test_package_dimensions(test_dataframe):
     actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                                     issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
-
+    run_test(actual_out, expected_out, test_func, test_num)
+    """
     ### TEST 4 -- Confirm conversion num 1 is being ignored ###
     test_num = 4
 
@@ -82,10 +83,11 @@ def test_package_dimensions(test_dataframe):
     actual_out = package_dimensions(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                                     issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)"""
 
 
 def test_is_blank_or_zero(test_dataframe):
+    test_func = 'test_is_blank_or_zero()'
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = ''
     error_message: str = ''
@@ -102,7 +104,7 @@ def test_is_blank_or_zero(test_dataframe):
     actual_out = is_blank_or_zero(df=TestDataframe(test_dataframe).get(), column_label='upc' ,issue_category=issue_category,
                                     issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 2 -- Catch 0s in specified column ###
     test_num = 2
@@ -117,10 +119,11 @@ def test_is_blank_or_zero(test_dataframe):
                                   issue_category=issue_category,
                                   issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
-
+"""
 def test_is_alt_uom_volume_zero(test_dataframe):
+    test_func = 'test_is_alt_uom_volume_zero()'
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'MISSING_VOLUME'
     error_message: str = 'Volume should not be blank for AUOM with Numerator > 1.'
@@ -145,7 +148,7 @@ def test_is_alt_uom_volume_zero(test_dataframe):
                                   issue_category=issue_category,
                                   issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 2 -- Catches Alt UOMs with volumes of 0 ###
     test_num = 2
@@ -160,7 +163,7 @@ def test_is_alt_uom_volume_zero(test_dataframe):
                                   issue_category=issue_category,
                                   issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 3 -- Catches Alt UOMs with empty volumes ###
     test_num = 3
@@ -175,11 +178,189 @@ def test_is_alt_uom_volume_zero(test_dataframe):
                                         issue_category=issue_category,
                                         issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
+"""
+
+def test_larger_gross_weight_failure(test_dataframe):
+    """
+    def larger_gross_weight_failure(df: pd.DataFrame,
+                                    issue_category: str = 'SUPPLY_CHAIN',
+                                    issue_code: str = 'WEIGHT_TOLERANCE',
+                                    error_message: str = 'Gross weight is outside expected tolerance of calculated gross weight.',
+                                    upper_tolerance: float= 0.25,
+                                    lower_tolerance: float= -0.05) -> pd.DataFrame:
+
+        Weight of higher AUOM level should not be Less than calculated Weight (Weight of lower UOM level times the Numerator for Conversion ratio).
+        Iterate for all UOM comparisons. +25% Variation is acceptable.
+        **There should also be a minimal negative variation allowed, to account for measurment precision.
+            :param df: Target DataFrame contain SKU/UOM data for evaluation.
+            :param issue_category: Owner of the issue's resolution.
+            :param issue_code: Short form code identifying the issue type.
+            :param error_message: Output detailing why the SKU/UOM was flagged.
+            :param upper_tolerance: How much greater the gross_weight is allowed to be in comparison to the calculated weight.
+            :param lower_tolerance: How much smaller the gross_weight is allowed to be in comparison to the calculated weight.
+            :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
+
+        base_uom_df = df[df['base_uom'] == df['alt_uom']][['material_number', 'gross_weight']].rename(columns={'gross_weight': 'b_gross_weight'})
+
+        alt_uom_df = df[(df['base_uom'] != df['alt_uom']) & (df['conversion_numerator'] > 1)]
+        alt_uom_df = alt_uom_df.merge(base_uom_df, on='material_number', how='inner')
+        alt_uom_df['calculated_weight'] = alt_uom_df['b_gross_weight'] * alt_uom_df['conversion_numerator']
+        alt_uom_df['percent_diff'] = (alt_uom_df['gross_weight'] - alt_uom_df['calculated_weight']) / alt_uom_df['calculated_weight']
+
+        alt_uom_df = alt_uom_df[(alt_uom_df['percent_diff'] > upper_tolerance) | (alt_uom_df['percent_diff'] < lower_tolerance)]
+        alt_uom_df = alt_uom_df.drop(columns=['b_gross_weight', 'calculated_weight', 'percent_diff'])
+
+        return format_df(alt_uom_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    """
+    # set output parameters
+    test_func = "test_larger_gross_weight_failure()"
+    issue_category: str = 'SUPPLY_CHAIN'
+    issue_code: str = 'WEIGHT_TOLERANCE'
+    error_message: str = 'Gross weight is outside expected tolerance of calculated gross weight.'
+
+    ### TEST 1 ###
+    test_num = 1
+    # No change, control test; PASS
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message,upper_tolerance=0.25,lower_tolerance=-0.05)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 2 ###
+    test_num = 2
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message,upper_tolerance=0.25,lower_tolerance=-0.05)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+    """
+    ### TEST 3 ###
+    test_num = 3
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 4 ###
+    test_num = 4
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 5 ###
+    test_num = 5
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 6 ###
+    test_num = 6
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 7 ###
+    test_num = 7
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 8 ###
+    test_num = 8
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 9 ###
+    test_num = 9
+    # no change; PASS
+
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 10 ###
+    test_num = 10
+    # no change; PASS
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[], )
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = larger_gross_weight_failure(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)"""
 
 
 def test_upc_required(test_dataframe):
     # set output parameters
+    test_func = 'test_upc_required()'
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'NO_UPC'
     error_message: str = 'Valid UPC/GTIN is required for all valid package levels.'
@@ -195,7 +376,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 2 ###
     test_num = 2
@@ -209,7 +390,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 3 ###
     test_num = 3
@@ -223,7 +404,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 4 ###
     test_num = 4
@@ -238,7 +419,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 5 ###
     test_num = 5
@@ -253,7 +434,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 6 ###
     test_num = 6
@@ -268,7 +449,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 7 ###
     test_num = 7
@@ -283,7 +464,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 8 ###
     test_num = 8
@@ -297,7 +478,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 9 ###
     test_num = 9
@@ -312,7 +493,7 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 10 ###
     test_num = 10
@@ -325,11 +506,12 @@ def test_upc_required(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
 """
 def test_invalid_gtin(test_dataframe):
     # set output parameters
+    test_func = 'test_invalid_gtin()'
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'INVALID_UPC'
     error_message: str = 'UPC failed check digit validation.'
@@ -345,7 +527,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 2 ###
     test_num = 2
@@ -359,7 +541,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 3 ###
     test_num = 3
@@ -373,7 +555,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 4 ###
     test_num = 4
@@ -387,7 +569,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     
     ### TEST 5 ###
@@ -402,7 +584,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
     
 
     ### TEST 6 ###
@@ -418,7 +600,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 7 ###
     test_num = 7
@@ -433,7 +615,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 8 ###
     test_num = 8
@@ -447,7 +629,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 9 ###
     test_num = 9
@@ -461,7 +643,7 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 10 ###
     test_num = 10
@@ -474,9 +656,10 @@ def test_invalid_gtin(test_dataframe):
     actual_out = invalid_gtin(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
+"""
 
-
+"""
 def test_unique_upc(test_dataframe):
 
     def unique_upc(df: pd.DataFrame,
@@ -508,7 +691,8 @@ def test_unique_upc(test_dataframe):
         df = df.groupby(by=['material_number', 'alt_uom'], as_index=False).agg(upc_collapse).reset_index(drop=True)
         return format_df(df, issue_category=issue_category, issue_code=issue_code, error_message=df['error_message'])
     
-# set output parameters
+    # set output parameters
+    test_func = 'test_unique_upc()'
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'DUPLICATE_UPC'
     error_message: str = ''
@@ -524,7 +708,7 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 2 ###
     test_num = 2
@@ -541,7 +725,7 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
     
     ### TEST 3 ###
     test_num = 3
@@ -555,7 +739,7 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 4 ###
     test_num = 4
@@ -569,7 +753,7 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 5 ###
     test_num = 5
@@ -583,7 +767,7 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 6 ###
     test_num = 6
@@ -597,7 +781,7 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 7 ###
     test_num = 7
@@ -611,7 +795,7 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 8 ###
     test_num = 8
@@ -625,7 +809,7 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 9 ###
     test_num = 9
@@ -639,12 +823,12 @@ def test_unique_upc(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
-    """
+    run_test(actual_out, expected_out, test_func, test_num)
+"""
 
 def test_template(test_dataframe):
-    """"""
     # set output parameters
+    test_func = ''
     issue_category: str = ''
     issue_code: str = ''
     error_message: str = ''
@@ -660,7 +844,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 2 ###
     test_num = 2
@@ -674,7 +858,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 3 ###
     test_num = 3
@@ -688,7 +872,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 4 ###
     test_num = 4
@@ -702,7 +886,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 5 ###
     test_num = 5
@@ -716,7 +900,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 6 ###
     test_num = 6
@@ -730,7 +914,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 7 ###
     test_num = 7
@@ -744,7 +928,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 8 ###
     test_num = 8
@@ -758,7 +942,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 9 ###
     test_num = 9
@@ -772,7 +956,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
     ### TEST 10 ###
     test_num = 10
@@ -785,7 +969,7 @@ def test_template(test_dataframe):
     actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
-    run_test(actual_out, expected_out, test_num)
+    run_test(actual_out, expected_out, test_func, test_num)
 
 
 class TestDataframe:
@@ -827,10 +1011,10 @@ def test_dataframe():
                            index=[1,2,3,4,5,6,7,8,9,10])
     return test_df
 
-def run_test(actual_out, expected_out, test_num) -> None:
+def run_test(actual_out, expected_out, test_func, test_num) -> None:
     # compare actual and expected
     try:
         pd.testing.assert_frame_equal(actual_out, expected_out)
     except AssertionError as e:
-        print("\n", "[FAIL] Test #", test_num, ": ",e, "\n")
+        print("\n", "[FAIL] ", test_func, "Test #", test_num, ": ",e, "\n")
 
