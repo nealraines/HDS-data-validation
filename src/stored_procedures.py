@@ -510,3 +510,4 @@ def unique_upc(df: pd.DataFrame,
     df = df[['material_number', 'alt_uom', 'error_message']]
     df = df.groupby(by=['material_number', 'alt_uom'], as_index=False).agg(upc_collapse).reset_index(drop=True)
     return format_df(df, issue_category=issue_category, issue_code=issue_code, error_message=df['error_message'])
+
