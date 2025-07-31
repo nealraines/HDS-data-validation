@@ -75,7 +75,7 @@ def test_package_dimensions(test_dataframe):
     TestDataframe(test_dataframe).set(4, 'material_number', 3)
     TestDataframe(test_dataframe).set(4, 'alt_uom', 'RL')
     TestDataframe(test_dataframe).set(4, 'conversion_numerator', 1)
-    # TestDataframe(test_dataframe).out() TODO: Check Test
+    # TestDataframe(test_dataframe).out() #TODO: Check Test
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'CS')], )
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
@@ -140,7 +140,7 @@ def test_is_alt_uom_volume_zero(test_dataframe):
     TestDataframe(test_dataframe).set(3, 'alt_uom', 'PKG')
     TestDataframe(test_dataframe).set(3, 'conversion_numerator', 6)
     TestDataframe(test_dataframe).set(3, 'volume', 0)
-    # TestDataframe(test_dataframe).out() TODO: Check Test
+    # TestDataframe(test_dataframe).out() #TODO: Check Test
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df_by_mat_auom(material_auom_pairs=[('1', 'PKG')])
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
@@ -507,7 +507,7 @@ def test_invalid_gtin(test_dataframe):
     test_num = 5
     # invalid check digit in GTIN-13; FAIL
     TestDataframe(test_dataframe).set(test_num,'upc',"9999999999999")
-    # TestDataframe(test_dataframe).out() TODO: Check Test
+    # TestDataframe(test_dataframe).out() #TODO: Check Test
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['5'], )
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
@@ -553,7 +553,7 @@ def test_invalid_gtin(test_dataframe):
     test_num = 8
     # invalid GTIN-8 check digit; FAIL
     TestDataframe(test_dataframe).set(test_num,'upc',"01234568")
-    # TestDataframe(test_dataframe).out() TODO: Check Test
+    # TestDataframe(test_dataframe).out() #TODO: Check Test
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['5','8'], )
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
@@ -577,7 +577,6 @@ def test_invalid_gtin(test_dataframe):
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
     run_test(actual_out, expected_out, test_func, test_num)
-
 
 
 def test_unique_upc(test_dataframe):
@@ -632,13 +631,33 @@ def test_unique_upc(test_dataframe):
 
     ### TEST 2 ###
     test_num = 2
-    # dupe UPC; FAIL
+    # dupe UPC across different SKUs; FAIL
     TestDataframe(test_dataframe).set(test_num, 'upc', '01234567')
     TestDataframe(test_dataframe).set(test_num, 'alt_uom', 'CS')
     TestDataframe(test_dataframe).set(3, 'upc', '01234567')
     TestDataframe(test_dataframe).set(3, 'alt_uom', 'PKG')
+    #TestDataframe(test_dataframe).out() #TODO: Check Test
     # set the expected error df by passing SKUs adjusted above that should fail
-    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3'], )
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3'])
+    expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
+                             error_message=error_message)
+    # pass actual df through function
+    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+                              issue_code=issue_code, error_message=error_message)
+    # run comparison assertion
+    run_test(actual_out, expected_out, test_func, test_num)
+
+    ### TEST 3 ###
+    test_num = 3
+    # dupe UPC with same SKU#, different AUOM; FAIL
+    TestDataframe(test_dataframe).set(4, 'material_number', '5')
+    TestDataframe(test_dataframe).set(4, 'upc', '09876547')
+    TestDataframe(test_dataframe).set(4, 'alt_uom', 'CS')
+    TestDataframe(test_dataframe).set(5, 'upc', '09876547')
+    TestDataframe(test_dataframe).set(5, 'alt_uom', 'PKG')
+    #TestDataframe(test_dataframe).out() #TODO: Check Test
+    # set the expected error df by passing SKUs adjusted above that should fail
+    error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','4','5'])
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message)
     # pass actual df through function
