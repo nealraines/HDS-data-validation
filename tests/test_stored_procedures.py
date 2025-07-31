@@ -263,8 +263,8 @@ def test_larger_alt_uom(test_dataframe):
     run_test(actual_out, expected_out, test_func, test_num)
 
 
-"""
 def test_is_alt_uom_weight_zero(test_dataframe):
+    """
     def is_alt_uom_weight_zero(df: pd.DataFrame,
                            issue_category: str = 'SUPPLY_CHAIN',
                            issue_code: str = 'MISSING_WEIGHT',
@@ -282,7 +282,8 @@ def test_is_alt_uom_weight_zero(test_dataframe):
     alt_uom_df = alt_uom_df[(alt_uom_df['gross_weight'].isna()) | (alt_uom_df['gross_weight'] == 0)]
 
     return format_df(alt_uom_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
-
+    """
+    test_func = 'test_is_alt_uom_weight_zero()'
     issue_category: str = 'SUPPLY_CHAIN'
     issue_code: str = 'MISSING_WEIGHT'
     error_message: str = 'Weight should not be blank or zero for AUOM with Numerator > 1.'
@@ -305,7 +306,7 @@ def test_is_alt_uom_weight_zero(test_dataframe):
                                         issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
     # print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'gross_weight', 'conversion_numerator']].head())
-
+    """
     run_test(actual_out, expected_out, test_func, test_num)
     
     ### TEST 2 -- Only Applies to PKG Levels with Conversion Numerator > 1 and AUOM != BUOM WEIGHT IS NULL ###
@@ -327,7 +328,7 @@ def test_is_alt_uom_weight_zero(test_dataframe):
     # print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'gross_weight', 'conversion_numerator']].head())
     # print(actual_out.head())
     run_test(actual_out, expected_out, test_func, test_num)
-"""
+    """
 
 
 def test_larger_gross_weight_failure(test_dataframe):
