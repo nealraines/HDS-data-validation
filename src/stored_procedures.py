@@ -88,7 +88,7 @@ def is_blank_or_zero(df: pd.DataFrame,
 def is_alt_uom_volume_zero(df: pd.DataFrame,
                            issue_category: str = 'SUPPLY_CHAIN',
                            issue_code: str = 'MISSING_VOLUME',
-                           error_message: str = 'Volume should not be blank for AUOM with Numerator > 1.') -> pd.DataFrame:
+                           error_message: str = 'Volume should not be blank or zero for base UOM and above.') -> pd.DataFrame:
     """
     Should not be blank or zero for UOMs where numerator >= denominator (exclude lower AUOMs)
     May appear to be 0 due to small LWH values in inches being converted to cubic feet.
