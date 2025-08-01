@@ -42,6 +42,9 @@ def passed_check_digit(upc: str) -> bool:
     current_check_digit: int = int(upc[-1])
     base_upc: str = upc[:-1]
 
+    if len(base_upc) > 17:
+        return False
+
     check_digit_sum: int = 0
     for i in range(1, len(base_upc) + 1):
         check_digit_sum += int(base_upc[-i]) * int(cd_coefficient_index[-i])
