@@ -3,7 +3,7 @@ from datetime import date
 import pandas as pd
 
 from exempt_pcat import exempt_pcat
-from utils import upc_collapse, alt_modulus, format_df
+from utils import upc_collapse, alt_modulus, passed_check_digit, format_df
 
 
 def package_dimensions(df: pd.DataFrame,
@@ -457,15 +457,16 @@ def invalid_gtin(df: pd.DataFrame,
                  issue_code: str = 'INVALID_UPC',
                  error_message: str = 'UPC failed check digit validation.') -> pd.DataFrame:
     """
-    UPC does not match an approved format. Pallets and AUOMs that are 1:1 are excluded from this requirement.
+    UPC does not fit the character length requirements (8, 12, 13, 14) or failed the check digit validation.
+    Pallets and AUOMs that are 1:1 are excluded from this requirement.
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
         :param issue_category: Owner of the issue's resolution.
         :param issue_code: Short form code identifying the issue type.
         :param error_message: Output detailing why the SKU/UOM was flagged.
         :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
     """
-    gtin_df = df[~df['upc'].isna()]
-    gtin_df = gtin_df[~gtin_df['upc'].str.match(r'^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$')]
+    gtin_df = df[~df['upc'].isna()].reset_index(drop=True)
+    gtin_df = gtin_df[~(gtin_df['upc'].str.match(r'^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$')) | ~(gtin_df['upc'].apply(passed_check_digit))]
     gtin_df = gtin_df[gtin_df['alt_uom'] != 'PAL']
     gtin_df = gtin_df[~((gtin_df['base_uom'] != gtin_df['alt_uom']) & (gtin_df['conversion_numerator'] == gtin_df['conversion_denominator']))]
 
