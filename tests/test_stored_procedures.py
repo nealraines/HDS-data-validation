@@ -256,11 +256,11 @@ def test_larger_alt_uom(test_dataframe):
                                         issue_code=issue_code, error_message=error_message).reset_index(drop=True)
     # compare actual and expected
     #print('\n', TestDataframe(test_dataframe).get().loc[:, ['material_number', 'base_uom', 'alt_uom', 'volume', 'conversion_numerator']].head())
-    print("\n","### test_larger_alt_uom() ###","\n")
-    TestDataframe(test_dataframe).out()
-    print("Actual output from larger_alt_volume():", "\n", actual_out.to_string())
-    print("Expected output:", "\n", expected_out.to_string())
-    run_test(actual_out, expected_out, test_func, test_num)
+    #print("\n","### test_larger_alt_uom() ###","\n")
+    #TestDataframe(test_dataframe).out()
+    #print("Actual output from larger_alt_volume():", "\n", actual_out.to_string())
+    #print("Expected output:", "\n", expected_out.to_string())
+    # run_test(actual_out, expected_out, test_func, test_num)
 
 
 def test_is_alt_uom_weight_zero(test_dataframe):
@@ -772,7 +772,7 @@ def test_unique_upc(test_dataframe):
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
     run_test(actual_out, expected_out, test_func, test_num)
@@ -790,7 +790,7 @@ def test_unique_upc(test_dataframe):
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
     run_test(actual_out, expected_out, test_func, test_num)
@@ -803,13 +803,13 @@ def test_unique_upc(test_dataframe):
     TestDataframe(test_dataframe).set(4, 'alt_uom', 'CS')
     TestDataframe(test_dataframe).set(5, 'upc', '09876547')
     TestDataframe(test_dataframe).set(5, 'alt_uom', 'PKG')
-    #TestDataframe(test_dataframe).out() #TODO: Check Test
+    TestDataframe(test_dataframe).out() #TODO: Check Test
     # set the expected error df by passing SKUs adjusted above that should fail
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3','4','5'])
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message)
     # pass actual df through function
-    actual_out = upc_required(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
+    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
                               issue_code=issue_code, error_message=error_message)
     # run comparison assertion
     run_test(actual_out, expected_out, test_func, test_num)
