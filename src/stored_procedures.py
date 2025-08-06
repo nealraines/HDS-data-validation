@@ -2,16 +2,16 @@ from datetime import date
 
 import pandas as pd
 
-from utils import upc_collapse, alt_modulus, format_df
 from exempt_pcat import exempt_pcat
+from utils import upc_collapse, alt_modulus, passed_check_digit, format_df
 
 
 def package_dimensions(df: pd.DataFrame,
                        issue_category: str = 'SUPPLY_CHAIN',
                        issue_code: str = 'INVALID_DIMENSIONS',
-                       error_message: str = 'Dimensions are missing or contain all default values (1)') -> pd.DataFrame:
+                       error_message: str = 'Dimensions are incomplete or contain all default values (1)') -> pd.DataFrame:
     """
-    For alt_uoms with a numerator > 1
+    For UOM where numerator is greater than or equal to denominator (excludes smaller AUOMs):
     Length, width and height should not all equal 1 (dummy values).
     Length, width or height should not contain nulls
     Length, width or height should not equal 0
@@ -23,7 +23,8 @@ def package_dimensions(df: pd.DataFrame,
     """
     df_list = []
 
-    df = df[(df['base_uom'] != df['alt_uom']) & (df['conversion_numerator'] > 1)]
+    # Remove smaller alt_uoms (denominator > numerator)
+    df = df[df['conversion_numerator'] >= df['conversion_denominator']]
 
     # Length, width and height should not all equal 1 (dummy values).
     is_len_one = df['length'] == 1
@@ -87,9 +88,9 @@ def is_blank_or_zero(df: pd.DataFrame,
 def is_alt_uom_volume_zero(df: pd.DataFrame,
                            issue_category: str = 'SUPPLY_CHAIN',
                            issue_code: str = 'MISSING_VOLUME',
-                           error_message: str = 'Volume should not be blank for AUOM with Numerator > 1.') -> pd.DataFrame:
+                           error_message: str = 'Volume should not be blank or zero for base UOM and above.') -> pd.DataFrame:
     """
-    Should not be blank for AUOM with Numerator > 1.
+    Should not be blank or zero for UOMs where numerator >= denominator (exclude lower AUOMs)
     May appear to be 0 due to small LWH values in inches being converted to cubic feet.
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
         :param issue_category: Owner of the issue's resolution.
@@ -97,7 +98,7 @@ def is_alt_uom_volume_zero(df: pd.DataFrame,
         :param error_message: Output detailing why the SKU/UOM was flagged.
         :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
     """
-    alt_uom_df = df[(df['base_uom'] != df['alt_uom']) & (df['conversion_numerator'] > 1)]
+    alt_uom_df = df[df['conversion_numerator'] >= df['conversion_denominator']]
 
     alt_uom_df = alt_uom_df[(alt_uom_df['volume'].isna()) | (alt_uom_df['volume'] == 0)]
 
@@ -135,34 +136,51 @@ def larger_alt_volume(df: pd.DataFrame,
     """
     Volume of AUOM level with greater Qty (Numerator > 1) should not be
     Equal to or Less than Volume of lower AUOM level. Iterate for all UOM comparisons.
+    Exclude results where AUOM volume is zero. is_alt_uom_volume_zero() looks for that condition already.
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
         :param issue_category: Owner of the issue's resolution.
         :param issue_code: Short form code identifying the issue type.
         :param error_message: Output detailing why the SKU/UOM was flagged.
         :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
     """
-    alt_uom_df = df[(df['base_uom'] != df['alt_uom']) & (df['conversion_numerator'] > 1)].reset_index(drop=True)
-    alt_uom_df['volume_test'] = alt_uom_df.groupby('material_number')['volume'].rolling(2).min().reset_index(drop=True)
-    alt_uom_df = alt_uom_df.dropna(subset='volume_test')
-    alt_uom_df = alt_uom_df[alt_uom_df['volume'] == alt_uom_df['volume_test']].drop(columns=['volume_test'])
 
-    return format_df(alt_uom_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
+    # Self join the material data and line up volume with volume from lower AUOM or base.
+    conversion_df = df[(df['conversion_denominator'] == 1)][['material_number', 'conversion_numerator', 'conversion_denominator', 'base_uom', 'alt_uom', 'volume']]
+    conversion_df = conversion_df.merge(conversion_df, on='material_number', how='inner', suffixes=('_base', None))
+    conversion_df = conversion_df[conversion_df['conversion_numerator'] > conversion_df['conversion_numerator_base']]
+    conversion_df = conversion_df.filter(items=['material_number',
+                                                'base_uom',
+                                                'alt_uom',
+                                                'conversion_numerator',
+                                                'conversion_numerator_base',
+                                                'volume_base',
+                                                'volume'])
+
+    # Return the max UOM that is still less than the current record, and return the max base volume if there are 1:1 equivalents beneath an AUOM
+    conversion_df = conversion_df.groupby(by=['material_number', 'base_uom', 'alt_uom', 'conversion_numerator', 'volume'], as_index=False).max().reset_index(drop=True)
+
+    # Reduce dataframe to records that have a volume <= volume from lower level.
+    conversion_df = conversion_df[conversion_df['volume'] <= conversion_df['volume_base']]
+
+    # Removing records where the alt_uom's volume = 0 because is_alt_uom_volume_zero() is already looking for this condition.
+    conversion_df = conversion_df[conversion_df['volume'] != 0]
+
+    return format_df(conversion_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
 
 
 def is_alt_uom_weight_zero(df: pd.DataFrame,
                            issue_category: str = 'SUPPLY_CHAIN',
                            issue_code: str = 'MISSING_WEIGHT',
-                           error_message: str = 'Weight should not be blank or zero for AUOM with Numerator > 1.') -> pd.DataFrame:
+                           error_message: str = 'Weight should not be blank or zero for base UOM and above.') -> pd.DataFrame:
     """
-    Weight should not be blank or zero for AUOM with Numerator > 1.
+    Weight should not be blank or zero for UOM where numerator >= denominator (base uom and above).
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
         :param issue_category: Owner of the issue's resolution.
         :param issue_code: Short form code identifying the issue type.
         :param error_message: Output detailing why the SKU/UOM was flagged.
         :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
     """
-    alt_uom_df = df[(df['base_uom'] != df['alt_uom']) & (df['conversion_numerator'] > 1)]
-
+    alt_uom_df = df[df['conversion_numerator'] >= df['conversion_denominator']]
     alt_uom_df = alt_uom_df[(alt_uom_df['gross_weight'].isna()) | (alt_uom_df['gross_weight'] == 0)]
 
     return format_df(alt_uom_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
@@ -383,7 +401,7 @@ def pallet_case_fault_tolerance(df: pd.DataFrame,
 def smaller_gross_weight_failure(df: pd.DataFrame,
                                  issue_category: str = 'SUPPLY_CHAIN',
                                  issue_code: str = 'WEIGHT_TOLERANCE',
-                                 error_message: str = 'Gross weight is outside expected tolerance of calculated gross weight.') -> pd.DataFrame: #TODO: Updated expected return value to pd.DataFrame
+                                 error_message: str = 'Gross weight is outside expected tolerance of calculated gross weight.') -> None:
     """
     If present, Weight of AUOM level with lesser Qty (Denominator > 1) should not be Greater than
     calculated Weight (Weight of Base UOM level divided by the Denominator for Conversion).
@@ -407,8 +425,8 @@ def larger_gross_weight_failure(df: pd.DataFrame,
                                 issue_category: str = 'SUPPLY_CHAIN',
                                 issue_code: str = 'WEIGHT_TOLERANCE',
                                 error_message: str = 'Gross weight is outside expected tolerance of calculated gross weight.',
-                                upper_tolerance: float=0.25,
-                                lower_tolerance: float=-0.05) -> pd.DataFrame:
+                                upper_tolerance: float= 0.25,
+                                lower_tolerance: float= -0.05) -> pd.DataFrame:
     """
     Weight of higher AUOM level should not be Less than calculated Weight (Weight of lower UOM level times the Numerator for Conversion ratio).
     Iterate for all UOM comparisons. +25% Variation is acceptable.
@@ -439,15 +457,16 @@ def invalid_gtin(df: pd.DataFrame,
                  issue_code: str = 'INVALID_UPC',
                  error_message: str = 'UPC failed check digit validation.') -> pd.DataFrame:
     """
-    UPC does not match an approved format. Pallets and AUOMs that are 1:1 are excluded from this requirement.
+    UPC does not fit the character length requirements (8, 12, 13, 14) or failed the check digit validation.
+    Pallets and AUOMs that are 1:1 are excluded from this requirement.
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
         :param issue_category: Owner of the issue's resolution.
         :param issue_code: Short form code identifying the issue type.
         :param error_message: Output detailing why the SKU/UOM was flagged.
         :return: pd.DataFrame | material_number | alt_uom | date_discovered | date_resolved | issue_category | error_message |
     """
-    gtin_df = df[~df['upc'].isna()]
-    gtin_df = gtin_df[~gtin_df['upc'].str.match(r'^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$')]
+    gtin_df = df[~df['upc'].isna()].reset_index(drop=True)
+    gtin_df = gtin_df[~(gtin_df['upc'].str.match(r'^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$')) | ~(gtin_df['upc'].apply(passed_check_digit))]
     gtin_df = gtin_df[gtin_df['alt_uom'] != 'PAL']
     gtin_df = gtin_df[~((gtin_df['base_uom'] != gtin_df['alt_uom']) & (gtin_df['conversion_numerator'] == gtin_df['conversion_denominator']))]
 
@@ -478,7 +497,7 @@ def upc_required(df: pd.DataFrame,
 def unique_upc(df: pd.DataFrame,
                upc_df: pd.DataFrame,
                issue_category: str = 'SUPPLY_CHAIN',
-               issue_code: str = 'DUPLICATE_UPC') -> pd.DataFrame: #TODO: Updated expected return value to pd.DataFrame
+               issue_code: str = 'DUPLICATE_UPC') -> None:
     """
     UPC/GTIN values must be Valid and must be unique for each AUOM entry within the record and across all other records
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
