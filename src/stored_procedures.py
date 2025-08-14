@@ -102,6 +102,9 @@ def is_alt_uom_volume_zero(df: pd.DataFrame,
 
     alt_uom_df = alt_uom_df[(alt_uom_df['volume'].isna()) | (alt_uom_df['volume'] == 0)]
 
+    alt_uom_df['calculated_volume'] = alt_uom_df['length'] * alt_uom_df['width'] * alt_uom_df['height'] / 1728
+    alt_uom_df = alt_uom_df[~((alt_uom_df['calculated_volume'] < .001) & (alt_uom_df['calculated_volume'] > 0))]
+
     return format_df(alt_uom_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
 
 
@@ -523,4 +526,3 @@ def unique_upc(df: pd.DataFrame,
     df = df[['material_number', 'alt_uom', 'error_message']]
     df = df.groupby(by=['material_number', 'alt_uom'], as_index=False).agg(upc_collapse).reset_index(drop=True)
     return format_df(df, issue_category=issue_category, issue_code=issue_code, error_message=df['error_message'])
-
