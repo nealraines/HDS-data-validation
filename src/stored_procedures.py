@@ -102,6 +102,9 @@ def is_alt_uom_volume_zero(df: pd.DataFrame,
 
     alt_uom_df = alt_uom_df[(alt_uom_df['volume'].isna()) | (alt_uom_df['volume'] == 0)]
 
+    alt_uom_df['calculated_volume'] = alt_uom_df['length'] * alt_uom_df['width'] * alt_uom_df['height'] / 1728
+    alt_uom_df = alt_uom_df[~((alt_uom_df['calculated_volume'] < .001) & (alt_uom_df['calculated_volume'] > 0))]
+
     return format_df(alt_uom_df, issue_category=issue_category, issue_code=issue_code, error_message=error_message)
 
 
@@ -401,7 +404,7 @@ def pallet_case_fault_tolerance(df: pd.DataFrame,
 def smaller_gross_weight_failure(df: pd.DataFrame,
                                  issue_category: str = 'SUPPLY_CHAIN',
                                  issue_code: str = 'WEIGHT_TOLERANCE',
-                                 error_message: str = 'Gross weight is outside expected tolerance of calculated gross weight.') -> None:
+                                 error_message: str = 'Gross weight is outside expected tolerance of calculated gross weight.') -> pd.DataFrame:
     """
     If present, Weight of AUOM level with lesser Qty (Denominator > 1) should not be Greater than
     calculated Weight (Weight of Base UOM level divided by the Denominator for Conversion).
@@ -497,7 +500,7 @@ def upc_required(df: pd.DataFrame,
 def unique_upc(df: pd.DataFrame,
                upc_df: pd.DataFrame,
                issue_category: str = 'SUPPLY_CHAIN',
-               issue_code: str = 'DUPLICATE_UPC') -> None:
+               issue_code: str = 'DUPLICATE_UPC') -> pd.DataFrame:
     """
     UPC/GTIN values must be Valid and must be unique for each AUOM entry within the record and across all other records
         :param df: Target DataFrame contain SKU/UOM data for evaluation.
@@ -523,4 +526,3 @@ def unique_upc(df: pd.DataFrame,
     df = df[['material_number', 'alt_uom', 'error_message']]
     df = df.groupby(by=['material_number', 'alt_uom'], as_index=False).agg(upc_collapse).reset_index(drop=True)
     return format_df(df, issue_category=issue_category, issue_code=issue_code, error_message=df['error_message'])
-
