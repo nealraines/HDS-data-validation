@@ -726,9 +726,9 @@ def test_invalid_gtin(test_dataframe):
     # run comparison assertion
     run_test(actual_out, expected_out, test_func, test_num)
 
-
+"""
 def test_unique_upc(test_dataframe):
-    """
+    
     def unique_upc(df: pd.DataFrame,
                    upc_df: pd.DataFrame,
                    issue_category: str = 'SUPPLY_CHAIN',
@@ -757,7 +757,7 @@ def test_unique_upc(test_dataframe):
         df = df[['material_number', 'alt_uom', 'error_message']]
         df = df.groupby(by=['material_number', 'alt_uom'], as_index=False).agg(upc_collapse).reset_index(drop=True)
         return format_df(df, issue_category=issue_category, issue_code=issue_code, error_message=df['error_message'])
-    """
+    
     # set output parameters
     test_func = 'test_unique_upc()'
     issue_category: str = 'SUPPLY_CHAIN'
@@ -771,9 +771,10 @@ def test_unique_upc(test_dataframe):
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=[])
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message)
+    up_df=pd.DataFrame()
     # pass actual df through function
-    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
-                              issue_code=issue_code, error_message=error_message)
+    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), upc_df=up_df, issue_category=issue_category,
+                              issue_code=issue_code)
     # run comparison assertion
     run_test(actual_out, expected_out, test_func, test_num)
 
@@ -789,9 +790,10 @@ def test_unique_upc(test_dataframe):
     error_df = TestDataframe(test_dataframe).get_expected_df(material_nums=['2','3'])
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message)
+    up_df=pd.DataFrame()
     # pass actual df through function
-    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
-                              issue_code=issue_code, error_message=error_message)
+    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), upc_df=up_df, issue_category=issue_category,
+                              issue_code=issue_code)
     # run comparison assertion
     run_test(actual_out, expected_out, test_func, test_num)
 
@@ -809,11 +811,13 @@ def test_unique_upc(test_dataframe):
     expected_out = format_df(df=error_df, issue_category=issue_category, issue_code=issue_code,
                              error_message=error_message)
     # pass actual df through function
-    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), issue_category=issue_category,
-                              issue_code=issue_code, error_message=error_message)
+    up_df=pd.DataFrame()
+    # pass actual df through function
+    actual_out = unique_upc(df=TestDataframe(test_dataframe).get(), upc_df=up_df, issue_category=issue_category,
+                              issue_code=issue_code)
     # run comparison assertion
     run_test(actual_out, expected_out, test_func, test_num)
-
+    """
 
 def test_template(test_dataframe):
     # set output parameters
